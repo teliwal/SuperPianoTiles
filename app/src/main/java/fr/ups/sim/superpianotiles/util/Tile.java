@@ -26,6 +26,10 @@ public class Tile {
         return top;
     }
 
+    public void setNumero(int numero) {
+        this.numero = numero;
+    }
+
     @Override
     public boolean equals(Object o) {
         if(o instanceof Tile){
@@ -33,6 +37,7 @@ public class Tile {
             return t.getTop()== getTop() && t.getLeft()==getLeft();
         }
         return false;
+
     }
 
     public String toString(){

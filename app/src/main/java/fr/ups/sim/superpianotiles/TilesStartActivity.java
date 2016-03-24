@@ -9,6 +9,8 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 import java.util.logging.Logger;
 
@@ -21,24 +23,20 @@ public class TilesStartActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tiles_start);
         //remplissage des positions possibles
-        Queue<Tile> pos = new ArrayDeque<>();
+        List<Tile> pos = new ArrayList<>();
         for(int i=0;i<4;i++){
             for(int j=0;j<5;j++)
-                pos.offer(new Tile(0,j,i));
+                pos.add(new Tile(0,j,i));
         }
         Queue<Tile> vi = new ArrayDeque<>();
-        vi.offer(new Tile(1,4,0));
-        vi.offer(new Tile(2,2,3));
-        vi.offer(new Tile(3,0,3));
-        vi.offer(new Tile(4,1,3));
-        Queue<Tile> inv = new ArrayDeque<>();
-        inv.addAll(pos);
-        inv.removeAll(vi);
+        vi.offer(new Tile(1, 4, 0));
+        vi.offer(new Tile(2, 2, 3));
+        vi.offer(new Tile(3, 0, 3));
+        pos.removeAll(vi);
         //ICI - Commentez le code
         tilesView = (TilesView) findViewById(R.id.view);
-        tilesView.setAllPositions(pos);
         tilesView.setTilesVisibles(vi);
-        tilesView.setTilesInvisibles(inv);
+        tilesView.setTilesInvisibles(pos);
         //ICI - Commentez le code
         tilesView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -80,12 +78,11 @@ public class TilesStartActivity extends Activity {
      * ICI - Commentez le code
      */
     private boolean onTouchEventHandler (MotionEvent evt){
-        Log.i("TilesView", "Touch event handled");
+        //Log.i("TilesView", "Touch event handled");
         boolean result=tilesView.isPremier(evt.getX(),evt.getY());
-
-        System.out.println(result);
-        if(result)
-            tilesView.modifier();
+        if(result) {
+            tilesView.modifierV1();
+        }
         return true;
     }
 }

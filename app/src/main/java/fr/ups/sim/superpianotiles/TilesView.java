@@ -17,6 +17,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Random;
 
 import fr.ups.sim.superpianotiles.util.Tile;
 
@@ -25,6 +26,7 @@ import fr.ups.sim.superpianotiles.util.Tile;
  */
 public class TilesView extends View {
 
+    private int numero_tile = 4;
     private int tileColor = Color.BLUE;
     private int textColor = Color.WHITE;
     private Drawable mExampleDrawable;
@@ -32,19 +34,14 @@ public class TilesView extends View {
     Paint pText = new Paint();
     Paint pTile = new Paint();
     Queue<Tile> tilesVisibles = new ArrayDeque<>();
-    Queue<Tile> tilesInvisibles = new ArrayDeque<>();
-    Queue<Tile> allPositions = new ArrayDeque<>();
+    List<Tile> tilesInvisibles = new ArrayList<>();
 
     public void setTilesVisibles(Queue<Tile> tilesVisibles) {
         this.tilesVisibles = tilesVisibles;
     }
 
-    public void setTilesInvisibles(Queue<Tile> tilesInvisibles) {
+    public void setTilesInvisibles(List<Tile> tilesInvisibles) {
         this.tilesInvisibles = tilesInvisibles;
-    }
-
-    public void setAllPositions(Queue<Tile> allPositions) {
-        this.allPositions = allPositions;
     }
 
     public TilesView(Context context) {
@@ -122,13 +119,21 @@ public class TilesView extends View {
 
     public void addTile(String order, RectF rect, Canvas canvas){
         canvas.drawRoundRect(rect, 2, 2, pTile);
-        canvas.drawText(order, rect.centerX(), rect.centerY(),pText);
+        canvas.drawText(order, rect.centerX(), rect.centerY(), pText);
     }
 
-    public void modifier(){
-        tilesVisibles.poll();
-        refreshDrawableState();
+    public void modifierV1(){
+        Tile t=tilesVisibles.poll();
+        t.setNumero(0);
+        Random r = new Random();
+        int num = r.nextInt(tilesInvisibles.size());
+        Tile t1=tilesInvisibles.remove(num);
+        t1.setNumero(numero_tile++);
+        tilesVisibles.offer(t1);
+        postInvalidate();
+        tilesInvisibles.add(t);
     }
+
 
     public boolean isPremier(float x,float y){
         int left = (int) (x/(getWidth()/4));
@@ -136,8 +141,6 @@ public class TilesView extends View {
         Tile t = new Tile(0,top,left);
         if(tilesVisibles.isEmpty())
             return false;
-        System.out.println(tilesVisibles.size());
-        System.out.println(t.getTop()+" "+t.getLeft()+" "+tilesVisibles.peek().getTop()+" "+tilesVisibles.peek().getLeft());
         return t.equals(tilesVisibles.peek());
     }
        /**

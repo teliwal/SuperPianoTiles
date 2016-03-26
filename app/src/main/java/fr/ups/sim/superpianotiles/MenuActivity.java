@@ -36,13 +36,7 @@ public class MenuActivity extends Activity {
                 startActivity(intent);
             }
         });
-        //affichage du score s'il vient de perdre
-        Intent intent = getIntent();
-        int score = intent.getIntExtra("score", -1);
-        if(score != -1) {
-            TextView affiche = (TextView) findViewById(R.id.affichageScore);
-            affiche.setText("Votre score :" + score + "\nEssayez de l'ameliorer");
-        }
+
     }
 
 }

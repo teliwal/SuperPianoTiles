@@ -13,4 +13,18 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:id="@+id/score"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:background="#7ec2dd"
+        android:height="30dp"
+        android:width="35dp"
+        android:textSize="15sp"
+        android:textAlignment="gravity"
+        android:textColor="#001bef" />
+
 </RelativeLayout>

@@ -16,4 +16,7 @@
     <string name="niveauDifficile">Difficile</string>
     <string name="title_activity_resultat">ResultatActivity</string>
     <string name="title_activity_result">ResultActivity</string>
+    <string name="entete">SuperPianoTiles</string>
+    <string name="finjeu">Game Over!!</string>
+    <string name="btrejouer">Rejouer</string>
 </resources>

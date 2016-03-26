@@ -3,11 +3,13 @@ package fr.ups.sim.superpianotiles;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayDeque;
@@ -24,15 +26,19 @@ public class TilesStartActivity extends Activity {
     private TilesView tilesView;
     public static final int NIVEAU_FACILE = 0;
     public static final int NIVEAU_MOYEN = 1;
+    public static final int MAX_ERROR = 3;
     public static final int NIVEAU_DIFFICILE = 2;
-    private static final int MAX_TILES = 5;
+    private static final int MAX_TILES = 20;
     private int niveau;
-    private Timer timerApparitionTile;
-    private long delai = 5000;
+    private CountDownTimer timerApparitionTile;
+    private long delai = 2000;
+    private TextView affscore;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tiles_start);
+        affscore = (TextView) findViewById(R.id.score);
         //recuperation du niveau
         Intent intent = getIntent();
         niveau = intent.getIntExtra("niveau",0);
@@ -59,15 +65,24 @@ public class TilesStartActivity extends Activity {
         });
         //creattion du timer si niveau Moyen
         if(niveau == NIVEAU_MOYEN){
-            timerApparitionTile = new Timer();
-            TimerTask task = new TimerTask() {
-                @Override
-                public void run() {
-                    handlerApparition();
-                }
-            };
-            timerApparitionTile.schedule(task,5000,delai);
+            createNStartTimer();
         }
+    }
+
+    /**
+     * creation du compte a rebours
+     */
+    private void createNStartTimer() {
+        timerApparitionTile = new CountDownTimer(delai,delai) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                return;
+            }
+            @Override
+            public void onFinish() {
+                handlerApparition();
+            }
+        }.start();
     }
 
     @Override
@@ -101,6 +116,7 @@ public class TilesStartActivity extends Activity {
         int result=tilesView.isPremier(evt.getX(),evt.getY());
         if(result == 0) {
             tilesView.modifierV1(niveau);
+            affscore.setText(" "+String.valueOf(tilesView.getScore()));
         } else if(result == -1){
             gameOver();
         }
@@ -111,13 +127,9 @@ public class TilesStartActivity extends Activity {
      * methode qui stope le jeu
      */
     public void gameOver(){
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(getBaseContext(),"Game Over!! ",Toast.LENGTH_SHORT).show();
-            }
-        });
-        Intent intent = new Intent(TilesStartActivity.this,MenuActivity.class);
+        if(timerApparitionTile != null)
+            timerApparitionTile.cancel();
+        Intent intent = new Intent(TilesStartActivity.this,ResultActivity.class);
         intent.putExtra("score",tilesView.getScore());
         startActivity(intent);
         finish();
@@ -127,10 +139,21 @@ public class TilesStartActivity extends Activity {
      * handler du timer d'apparition des tuiles
      */
     private void handlerApparition(){
-        tilesView.ajouterTileV2();
-        if(tilesView.nbTiles() == MAX_TILES) {
-            timerApparitionTile.cancel();
+        if(tilesView.nbTiles() < 2){
+            tilesView.ajouterTileV2(3);
+        } else {
+            if(tilesView.nbTiles() <= 18)
+                tilesView.ajouterTileV2(2);
+            else
+                tilesView.ajouterTileV2(1);
+        }
+        if(tilesView.nbTiles() >= MAX_TILES) {
             gameOver();
+        }
+        else {
+            delai = Math.round(2031.045025 * Math.exp(-2.618556015*Math.pow(10,-2) * tilesView.getScore())) ;
+            timerApparitionTile.cancel();
+            createNStartTimer();
         }
     }
 }

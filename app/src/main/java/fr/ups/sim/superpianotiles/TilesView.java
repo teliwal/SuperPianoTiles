@@ -28,6 +28,7 @@ public class TilesView extends View {
 
     private int numero_tile = 1;
     private int score = 0;
+    private int nb_erreur = 0; //nombre de fois qu'il appuie hors d'une tuile
     private int tileColor = Color.BLUE;
     private int textColor = Color.WHITE;
     private Drawable mExampleDrawable;
@@ -80,33 +81,28 @@ public class TilesView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
         int paddingLeft = getPaddingLeft();
         int paddingTop = getPaddingTop();
         int paddingRight = getPaddingRight();
         int paddingBottom = getPaddingBottom();
-
         int contentWidth = getWidth() - paddingLeft - paddingRight;
         int contentHeight = getHeight() - paddingTop - paddingBottom;
+        drawBasique(canvas);
+        if (mExampleDrawable != null) {
+            mExampleDrawable.setBounds(paddingLeft, paddingTop,
+                    paddingLeft + contentWidth, paddingTop + contentHeight);
+            mExampleDrawable.draw(canvas);
+        }
+    }
 
+    /**
+     * methode qui dessine les tiles pour les niveaux facile et moyen
+     */
+    public void drawBasique(Canvas canvas){
         pText.setTextSize(textSize);
         pText.setColor(textColor);
         pTile.setColor(tileColor);
-
-        //Tile 1
-        /*int left = 0;
-        int top = getBottom() * 3 / 4;
-        int right = getWidth()/5;
-        int bottom = getBottom();
-        addTile("1", new RectF(left, top, right, bottom), canvas);
-
-        //Tile 2
-        left = getWidth()*3/5;
-        top = getBottom()- getBottom() * 3 / 4;
-        right = getWidth()-getWidth()/5;
-        bottom = getBottom()/2;
-        addTile("2", new RectF(left, top, right, bottom), canvas);*/
-        // Draw the example drawable on top of the text.
+        // dessine les tiles visibles
         for (Tile t:tilesVisibles){
             int left = (getWidth()/4)*t.getLeft();
             int right = left+(getWidth()/4)-1;
@@ -114,14 +110,8 @@ public class TilesView extends View {
             int bottom = top+ (getHeight()/5)-1;
             addTile(t.toString(),new RectF(left,top,right,bottom),canvas);
         }
-        if (mExampleDrawable != null) {
-            System.out.println("yes");
-            mExampleDrawable.setBounds(paddingLeft, paddingTop,
-                    paddingLeft + contentWidth, paddingTop + contentHeight);
-            mExampleDrawable.draw(canvas);
-        }
+        dessinerQuadrillage(canvas);
     }
-
     /**
      *
      * @param order
@@ -169,22 +159,28 @@ public class TilesView extends View {
     /**
      *methode qui rajoute une tile  pour le niveau Moyen
      */
-    public void ajouterTileV2(){
-        ajouterTileAleatoire();
+    public void ajouterTileV2(int nbTile){
+        for (int i = 0; i < nbTile;i++){
+            ajouterTileAleatoire();
+        }
         postInvalidate();
     }
 
     /*methode qui verifie qu'il a touché la tile a enlever
     retourne 0 s'il s'agit de la bonne
-    1 s'il n'a pas appuyé sur une tile visible et
+    1 s'il n'a pas appuyé sur une tile visible et qu'il n'a pas atteint le max d'erreurs
     -1 s'il s'agit d'une mauvaise tile
      */
     public int isPremier(float x,float y){
         int left = (int) (x/(getWidth()/4));
         int top = (int) (y/(getHeight()/5));
         Tile t = new Tile(0,top,left);
-        if(tilesInvisibles.contains(t))
-            return 1;
+        if(tilesInvisibles.contains(t)) {
+            nb_erreur++;
+            if(nb_erreur == TilesStartActivity.MAX_ERROR)
+                return -1;
+            else return 1;
+        }
         if(t.equals(tilesVisibles.peek()))
             return 0;
         else return -1;
@@ -194,6 +190,34 @@ public class TilesView extends View {
      */
     public int nbTiles(){
         return tilesVisibles.size();
+    }
+
+    /**
+     * methode qui dessine un quadrillage representant l'emplacement des tuiles
+     * @param canvas
+     */
+    private void dessinerQuadrillage(Canvas canvas){
+        Paint ligne = new Paint();
+        ligne.setColor(Color.BLACK);
+        // il y a un cas a part pour la derniere ligne, que l'on retracte de 1 pixel pour quelle rentre dans l'ecran
+        //(sinon elle est exactement sur le bord de l'ecran)
+        // Dessiner les lignes verticales
+        for(int i = 0; i < 5; i++){
+            if(i == 4) {
+                canvas.drawLine(i * (getWidth()/4)-1, getHeight(), i * (getWidth()/4)-1, 0, ligne);
+            }
+            else{
+                canvas.drawLine(i * (getWidth()/4), getHeight(), i * (getWidth()/4), 0, ligne);
+            }
+        }
+        // Dessiner les lignes horizontales
+        for(int i = 0; i < 7; i++) {
+            if (i == 6) {
+                canvas.drawLine(0, i * (getHeight() / 5) - 1, getWidth(), i * (getHeight() / 5) - 1, ligne);
+            } else {
+                canvas.drawLine(0, i * (getHeight() / 5), getWidth(), i * (getHeight() / 5), ligne);
+            }
+        }
     }
        /**
      * Gets the example drawable attribute value.

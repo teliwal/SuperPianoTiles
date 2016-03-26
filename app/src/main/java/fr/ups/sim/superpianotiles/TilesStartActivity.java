@@ -1,43 +1,51 @@
 package fr.ups.sim.superpianotiles;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Logger;
 
 import fr.ups.sim.superpianotiles.util.Tile;
 
 public class TilesStartActivity extends Activity {
-    TilesView tilesView;
+    private TilesView tilesView;
+    public static final int NIVEAU_FACILE = 0;
+    public static final int NIVEAU_MOYEN = 1;
+    public static final int NIVEAU_DIFFICILE = 2;
+    private static final int MAX_TILES = 5;
+    private int niveau;
+    private Timer timerApparitionTile;
+    private long delai = 5000;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tiles_start);
-        //remplissage des positions possibles
-        List<Tile> pos = new ArrayList<>();
-        for(int i=0;i<4;i++){
-            for(int j=0;j<5;j++)
-                pos.add(new Tile(0,j,i));
-        }
-        Queue<Tile> vi = new ArrayDeque<>();
-        vi.offer(new Tile(1, 4, 0));
-        vi.offer(new Tile(2, 2, 3));
-        vi.offer(new Tile(3, 0, 3));
-        pos.removeAll(vi);
+        //recuperation du niveau
+        Intent intent = getIntent();
+        niveau = intent.getIntExtra("niveau",0);
         //ICI - Commentez le code
         tilesView = (TilesView) findViewById(R.id.view);
-        tilesView.setTilesVisibles(vi);
-        tilesView.setTilesInvisibles(pos);
-        //ICI - Commentez le code
+        //initialisation des positions
+        tilesView.initPositions();
+        // on rajoute trois tiles a debut du jeu
+        for(int i=0;i<3;i++)
+            tilesView.ajouterTileAleatoire();
+        /*Activation du listener quand on touche l'ecran
+          les actions MotionEvent.ACTION_DOWN et ACTION_POINTER_DOWN sont traites
+         */
         tilesView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -49,6 +57,17 @@ public class TilesStartActivity extends Activity {
                 return true;
             }
         });
+        //creattion du timer si niveau Moyen
+        if(niveau == NIVEAU_MOYEN){
+            timerApparitionTile = new Timer();
+            TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    handlerApparition();
+                }
+            };
+            timerApparitionTile.schedule(task,5000,delai);
+        }
     }
 
     @Override
@@ -79,10 +98,39 @@ public class TilesStartActivity extends Activity {
      */
     private boolean onTouchEventHandler (MotionEvent evt){
         //Log.i("TilesView", "Touch event handled");
-        boolean result=tilesView.isPremier(evt.getX(),evt.getY());
-        if(result) {
-            tilesView.modifierV1();
+        int result=tilesView.isPremier(evt.getX(),evt.getY());
+        if(result == 0) {
+            tilesView.modifierV1(niveau);
+        } else if(result == -1){
+            gameOver();
         }
         return true;
+    }
+
+    /**
+     * methode qui stope le jeu
+     */
+    public void gameOver(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getBaseContext(),"Game Over!! ",Toast.LENGTH_SHORT).show();
+            }
+        });
+        Intent intent = new Intent(TilesStartActivity.this,MenuActivity.class);
+        intent.putExtra("score",tilesView.getScore());
+        startActivity(intent);
+        finish();
+    }
+
+    /**
+     * handler du timer d'apparition des tuiles
+     */
+    private void handlerApparition(){
+        tilesView.ajouterTileV2();
+        if(tilesView.nbTiles() == MAX_TILES) {
+            timerApparitionTile.cancel();
+            gameOver();
+        }
     }
 }

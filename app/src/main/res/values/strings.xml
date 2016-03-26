@@ -8,4 +8,12 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="title_activity_menu">SuperPianoTiles</string>
+    <string name="bienvenue">Bienvenue au SuperPianoTiles</string>
+    <string name="choix">Choisissez votre niveau</string>
+    <string name="niveauFacile">Facile</string>
+    <string name="niveauMoyen">Moyen</string>
+    <string name="niveauDifficile">Difficile</string>
+    <string name="title_activity_resultat">ResultatActivity</string>
+    <string name="title_activity_result">ResultActivity</string>
 </resources>

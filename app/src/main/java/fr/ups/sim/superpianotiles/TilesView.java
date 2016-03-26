@@ -26,7 +26,8 @@ import fr.ups.sim.superpianotiles.util.Tile;
  */
 public class TilesView extends View {
 
-    private int numero_tile = 4;
+    private int numero_tile = 1;
+    private int score = 0;
     private int tileColor = Color.BLUE;
     private int textColor = Color.WHITE;
     private Drawable mExampleDrawable;
@@ -42,6 +43,10 @@ public class TilesView extends View {
 
     public void setTilesInvisibles(List<Tile> tilesInvisibles) {
         this.tilesInvisibles = tilesInvisibles;
+    }
+
+    public int getScore(){
+        return score;
     }
 
     public TilesView(Context context) {
@@ -117,31 +122,78 @@ public class TilesView extends View {
         }
     }
 
+    /**
+     *
+     * @param order
+     * @param rect
+     * @param canvas
+     * methode qui dessine une tile sur l'ecran
+     */
     public void addTile(String order, RectF rect, Canvas canvas){
         canvas.drawRoundRect(rect, 2, 2, pTile);
         canvas.drawText(order, rect.centerX(), rect.centerY(), pText);
     }
 
-    public void modifierV1(){
-        Tile t=tilesVisibles.poll();
-        t.setNumero(0);
+    /**
+     * methode qui initialise les positions possibles
+     */
+    public void initPositions(){
+        for(int i=0;i<4;i++) {
+            for (int j = 0; j < 5; j++)
+                tilesInvisibles.add(new Tile(0, j, i));
+        }
+    }
+    /**
+     * methode qui ajoute une Tile a une position aleatoire sur les tiles visibles
+     */
+    public void ajouterTileAleatoire(){
         Random r = new Random();
         int num = r.nextInt(tilesInvisibles.size());
         Tile t1=tilesInvisibles.remove(num);
         t1.setNumero(numero_tile++);
         tilesVisibles.offer(t1);
+    }
+    /**
+     methode pour la modification pour le niveau facile
+     */
+    public void modifierV1(int niveau){
+        score++;
+        Tile t=tilesVisibles.poll();
+        t.setNumero(0);
+        if(niveau == TilesStartActivity.NIVEAU_FACILE)
+            ajouterTileAleatoire();//on rajoute une tile pour le niveau facile
         postInvalidate();
         tilesInvisibles.add(t);
     }
 
+    /**
+     *methode qui rajoute une tile  pour le niveau Moyen
+     */
+    public void ajouterTileV2(){
+        ajouterTileAleatoire();
+        postInvalidate();
+    }
 
-    public boolean isPremier(float x,float y){
+    /*methode qui verifie qu'il a touché la tile a enlever
+    retourne 0 s'il s'agit de la bonne
+    1 s'il n'a pas appuyé sur une tile visible et
+    -1 s'il s'agit d'une mauvaise tile
+     */
+    public int isPremier(float x,float y){
         int left = (int) (x/(getWidth()/4));
         int top = (int) (y/(getHeight()/5));
         Tile t = new Tile(0,top,left);
-        if(tilesVisibles.isEmpty())
-            return false;
-        return t.equals(tilesVisibles.peek());
+        if(tilesInvisibles.contains(t))
+            return 1;
+        if(t.equals(tilesVisibles.peek()))
+            return 0;
+        else return -1;
+    }
+    /**
+     * retourne la nombre de tiles visibles
+     */
+    public int nbTiles(){
+        return tilesVisibles.size();
     }
        /**
      * Gets the example drawable attribute value.
